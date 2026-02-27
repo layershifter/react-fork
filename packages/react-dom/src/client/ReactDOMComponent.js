@@ -525,7 +525,6 @@ export function setInitialProperties(
       listenToNonDelegatedEvent('error', domElement);
       props = rawProps;
       break;
-    case 'img':
     case 'image':
     case 'link':
       // We listen to these events in case to ensure emulated bubble
@@ -565,6 +564,68 @@ export function setInitialProperties(
       // listeners still fire for the invalid event.
       listenToNonDelegatedEvent('invalid', domElement);
       break;
+    // img tags previously were implemented as void elements with non delegated events however Safari (and possibly Firefox)Collapse commentComment on line R1034eps1lon commented on Jul 15, 2024 eps1lonon Jul 15, 2024CollaboratorMore actionsSafari truly is the new IE.React😄React with 😄3gnoff, bthall16 and imagekitioWrite a replyResolve comment
+    // begin fetching the image as soon as the `src` or `srcSet` property is set and if we set these before other properties
+    // that can modify the request (such as crossorigin) or the resource fetch (such as sizes) then the browser will load
+    // the wrong thing or load more than one thing. This implementation ensures src and srcSet are set on the instance last
+    case 'img': {
+      listenToNonDelegatedEvent('error', domElement);
+      listenToNonDelegatedEvent('load', domElement);
+      // Mostly a port of Void Element logic with special casing to ensure srcset and src are set last
+      let hasSrc = false;
+      let hasSrcSet = false;
+      for (const propKey in rawProps) {
+        if (!rawProps.hasOwnProperty(propKey)) {
+          continue;
+        }
+        const propValue = rawProps[propKey];
+        if (propValue == null) {
+          continue;
+        }
+        switch (propKey) {
+          case 'src':
+            hasSrc = true;
+            break;
+          case 'srcSet':
+            hasSrcSet = true;
+            break;
+          case 'children':
+          case 'dangerouslySetInnerHTML': {
+            // TODO: Can we make this a DEV warning to avoid this deny list?
+            throw new Error(
+              `${tag} is a void element tag and must neither have \`children\` nor ` +
+                'use `dangerouslySetInnerHTML`.',
+            );
+          }
+          // defaultChecked and defaultValue are ignored by setProp
+          default: {
+            setValueForProperty(
+              domElement,
+              propKey,
+              propValue,
+              false,
+            );
+          }
+        }
+      }
+      if (hasSrcSet) {
+        setValueForProperty(
+          domElement,
+          'srcSet',
+          rawProps.srcSet,
+          false
+        );
+      }
+      if (hasSrc) {
+        setValueForProperty(
+          domElement,
+          'src',
+          rawProps.src,
+          false,
+        );
+      }
+      return;
+    }
     default:
       props = rawProps;
   }
