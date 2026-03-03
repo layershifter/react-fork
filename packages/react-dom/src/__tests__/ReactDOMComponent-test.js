@@ -487,6 +487,31 @@ describe('ReactDOMComponent', () => {
         expect(node.hasAttribute('src')).toBe(false);
       });
 
+      it('should set crossorigin attribute after src attribute', () => {
+        const container = document.createElement('div');
+        ReactDOM.render(<img />, container);
+        const node = container.firstChild;
+
+        const attributeOrder = [];
+        const originalSetAttribute = node.setAttribute.bind(node);
+        node.setAttribute = jest.fn((name, value) => {
+          attributeOrder.push(name);
+          originalSetAttribute(name, value);
+        });
+
+        ReactDOM.render(
+          <img src="test.jpg" crossOrigin="anonymous" />,
+          container,
+        );
+
+        // Verify that src is set before crossorigin
+        const srcIndex = attributeOrder.indexOf('src');
+        const crossoriginIndex = attributeOrder.indexOf('crossorigin');
+        expect(srcIndex).not.toBe(-1);
+        expect(crossoriginIndex).not.toBe(-1);
+        expect(srcIndex).toBeLessThan(crossoriginIndex);
+      });
+
       it('should not add an empty href attribute', () => {
         const container = document.createElement('div');
         expect(() => ReactDOM.render(<link href="" />, container)).toErrorDev(

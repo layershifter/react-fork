@@ -564,7 +564,7 @@ export function setInitialProperties(
       // listeners still fire for the invalid event.
       listenToNonDelegatedEvent('invalid', domElement);
       break;
-    // img tags previously were implemented as void elements with non delegated events however Safari (and possibly Firefox)Collapse commentComment on line R1034eps1lon commented on Jul 15, 2024 eps1lonon Jul 15, 2024CollaboratorMore actionsSafari truly is the new IE.React😄React with 😄3gnoff, bthall16 and imagekitioWrite a replyResolve comment
+    // img tags previously were implemented as void elements with non delegated events however Safari (and possibly Firefox)
     // begin fetching the image as soon as the `src` or `srcSet` property is set and if we set these before other properties
     // that can modify the request (such as crossorigin) or the resource fetch (such as sizes) then the browser will load
     // the wrong thing or load more than one thing. This implementation ensures src and srcSet are set on the instance last
@@ -597,6 +597,9 @@ export function setInitialProperties(
                 'use `dangerouslySetInnerHTML`.',
             );
           }
+          case 'style':
+            setValueForStyles(domElement, propValue);
+            break;
           // defaultChecked and defaultValue are ignored by setProp
           default: {
             setValueForProperty(
